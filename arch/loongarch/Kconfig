@@ -138,6 +138,21 @@ config MACH_LOONGSON32
 	help
 	  This enables the support of Loongson 32-bit family of machines. These
 	  machines are based on new Loongson-3 processors.
+
+config MACH_LAINSOC
+	bool "Loongson 32-bit family compatible processor."
+	select IRQ_LOONGARCH_CPU
+	select NR_CPUS_DEFAULT_1
+#	select SYS_SUPPORTS_HIGHMEM
+	select SYS_HAS_CPU_LOONGSON32
+	select SYS_SUPPORTS_32BIT_KERNEL
+	select ZONE_DMA32
+#	select PCI
+#	select HAVE_PCI
+	help
+	  This enables the support of Loongson 32-bit family of machines. These
+	  machines are based on new Loongson-3 processors.s
+	  
 endchoice
 
 source "arch/loongarch/loongson32/Kconfig"

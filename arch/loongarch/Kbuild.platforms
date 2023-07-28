@@ -2,6 +2,7 @@
 
 platforms += loongson64
 platforms += loongson32
+platform-$(CONFIG_MACH_MEGASOC)     += megasoc/
 
 # include the platform specific files
 include $(patsubst %, $(srctree)/arch/loongarch/%/Platform, $(platforms))

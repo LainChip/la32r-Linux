@@ -1,0 +1,3 @@
+platform-$(CONFIG_MACH_MEGASOC)	+= megasoc/
+cflags-$(CONFIG_MACH_MEGASOC)	+= -I$(srctree)/arch/loongarch/include/asm/mach-megasoc -mno-branch-likely
+load-$(CONFIG_MACH_MEGASOC)	+= 0xffffffff80100000
