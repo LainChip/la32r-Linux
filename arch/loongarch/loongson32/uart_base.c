@@ -23,7 +23,7 @@ EXPORT_SYMBOL(_loongson_uart_base);
 
 void prom_init_loongson_uart_base(void)
 {
-	loongson_uart_base[0] =(unsigned long ) 0x9fe001e0;
+	loongson_uart_base[0] =(unsigned long ) 0x9fe40000;
 	_loongson_uart_base[0] =
 		(unsigned long)ioremap(loongson_uart_base[0], 8);
 }
