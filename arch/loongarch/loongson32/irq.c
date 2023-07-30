@@ -31,10 +31,12 @@ void mach_irq_dispatch(unsigned int pending)
 {
     if (pending & 0x800)
 		do_IRQ(LOONGSON_TIMER_IRQ);
+	if (pending & 0x10)
+		do_IRQ(LOONGSON_MMCCMD_IRQ);
 	if (pending & 0x20)
-		do_IRQ(4);
-	if (pending & 0x4)
-		do_IRQ(LOONGSON_GMAC_IRQ) ; //in fact , it's for ehternet
+		do_IRQ(LOONGSON_MMCDAT_IRQ);
+	// if (pending & 0x4)
+	// 	do_IRQ(LOONGSON_GMAC_IRQ) ; //in fact , it's for ethernet
 	if (pending & 0x8)
 		do_IRQ(LOONGSON_UART_IRQ);
 }

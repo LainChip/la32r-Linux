@@ -12,4 +12,7 @@ make vmlinux -j
 
 ----
 fatload mmc 0 0xa2000000 vmlinux
-bootelf 0xa2000000 g console=ttyS0,230400 rdinit=/init 
+bootelf 0xa2000000 g console=ttyS0,230400 rdinit=/init loglevel=9
+
+fatload mmc 0 0xa2000000 vmlinux
+bootelf 0xa2000000 g console=ttyS0,230400 root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait loglevel=9

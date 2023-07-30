@@ -475,7 +475,7 @@ static int ocsdc_probe(struct platform_device *pdev)
 	mmc->caps2 = 0;
 	mmc->max_segs = 1;
 	mmc->max_blk_size = 1 << 12;
-	mmc->max_blk_count = 1 << 16;
+	mmc->max_blk_count = 1 << 8;  // 0x100
 	mmc->max_req_size = mmc->max_blk_size * mmc->max_blk_count;
 	mmc->max_seg_size = mmc->max_req_size;
 	mmc->ocr_avail = ocsdc_get_voltage(dev);
@@ -485,7 +485,7 @@ static int ocsdc_probe(struct platform_device *pdev)
 		goto ERROR;
 
 	platform_set_drvdata(pdev, mmc);
-	printk("ocsdc probe ok!");
+	printk("ocsdc probe ok!\n");
 	dev_dbg(&pdev->dev, "ocsdc probe ok\n");
 	return 0;
 
