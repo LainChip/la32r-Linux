@@ -282,11 +282,13 @@ static int xilinxfb_assign(struct platform_device *pdev,
 	}
 
 	/* Allocate the framebuffer memory */
+	printk("fb_phys: %08x\n", pdata->fb_phys);
 	if (pdata->fb_phys) {
 		drvdata->fb_phys = pdata->fb_phys;
 		drvdata->fb_virt = ioremap(pdata->fb_phys, fbsize);
 	} else {
 		drvdata->fb_alloced = 1;
+		printk("alocate fb memory: %08x\n", PAGE_ALIGN(fbsize));
 		drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(fbsize),
 						      &drvdata->fb_phys,
 						      GFP_KERNEL);
@@ -410,6 +412,11 @@ static int xilinxfb_release(struct device *dev)
  * OF bus binding
  */
 
+u32 inline reversebytes_u32(const u32 value) {
+	return (value & 0x000000FFU) << 24 | (value & 0x0000FF00U) << 8 | 
+           (value & 0x00FF0000U) >> 8  | (value & 0xFF000000U) >> 24;
+}
+
 static int xilinxfb_of_probe(struct platform_device *pdev)
 {
 	const u32 *prop;
@@ -454,21 +461,33 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
 #endif
 
 	prop = of_get_property(pdev->dev.of_node, "phys-size", &size);
+	printk("phys-size prop : %08x %pK\n", prop, prop);
 	if ((prop) && (size >= sizeof(u32) * 2)) {
-		pdata.screen_width_mm = prop[0];
-		pdata.screen_height_mm = prop[1];
+		printk("width = %08x, height = %08x\n", prop[0], prop[1]);
+		printk("[rvs] width = %08x, height = %08x\n", 
+					reversebytes_u32(prop[0]), reversebytes_u32(prop[1]));
+		pdata.screen_width_mm  = reversebytes_u32(prop[0]);
+		pdata.screen_height_mm = reversebytes_u32(prop[1]);
 	}
 
 	prop = of_get_property(pdev->dev.of_node, "resolution", &size);
+	printk("resolution prop : %08x %pK\n", prop, prop);
 	if ((prop) && (size >= sizeof(u32) * 2)) {
-		pdata.xres = prop[0];
-		pdata.yres = prop[1];
+		printk("xres = %08x, yres = %08x\n", prop[0], prop[1]);
+		printk("[rvs] xres = %08x, yres = %08x\n", 
+					reversebytes_u32(prop[0]), reversebytes_u32(prop[1]));
+		pdata.xres = reversebytes_u32(prop[0]);
+		pdata.yres = reversebytes_u32(prop[1]);
 	}
 
 	prop = of_get_property(pdev->dev.of_node, "virtual-resolution", &size);
+	printk("virtual-resolution prop : %08x %pK\n", prop, prop);
 	if ((prop) && (size >= sizeof(u32) * 2)) {
-		pdata.xvirt = prop[0];
-		pdata.yvirt = prop[1];
+		printk("xvirt = %08x, yvirt = %08x\n", prop[0], prop[1]);
+		printk("[rvs] xvirt = %08x, yvirt = %08x\n", 
+					reversebytes_u32(prop[0]), reversebytes_u32(prop[1]));
+		pdata.xvirt = reversebytes_u32(prop[0]);
+		pdata.yvirt = reversebytes_u32(prop[1]);
 	}
 
 	if (of_find_property(pdev->dev.of_node, "rotate-display", NULL))

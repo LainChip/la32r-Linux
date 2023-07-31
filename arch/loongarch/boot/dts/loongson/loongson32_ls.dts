@@ -72,6 +72,15 @@
             interrupts = <3 4>;
         };
 
+        axi_tft_0: axi_tft@1c110000 {
+			compatible = "xlnx,xps-tft-2.00.a";	// accl
+			reg = <0x1c110000 0x1000>; // TFT controller
+			xlnx,dcr-splb-slave-if = <0x1>;
+			resolution = <512 480>; // actual video size
+			virtual-resolution = <1024 480>; // framebuffersize
+			phys-size = <512 480>; // don't care (physical size of screen)
+		};
+
         // gmac0: dmfe@0x1ff00000{
         //         compatible = "dmfe";
         //         reg = <0x1ff00000 0x10000>;
