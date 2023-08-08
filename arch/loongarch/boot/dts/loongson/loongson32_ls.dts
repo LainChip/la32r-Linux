@@ -76,15 +76,15 @@
 			compatible = "xlnx,xps-tft-2.00.a";	// accl
 			reg = <0x1c110000 0x1000>; // TFT controller
 			xlnx,dcr-splb-slave-if = <0x1>;
-			resolution = <1280 720>; // actual video size
-			virtual-resolution = <1280 2160>; // framebuffersize
-			phys-size = <1280 720>; // don't care (physical size of screen)
+			resolution = <512 480>; // actual video size
+			virtual-resolution = <1024 480>; // framebuffersize
+			phys-size = <512 480>; // don't care (physical size of screen)
 		};
 
         usb: usb@1c170000 {
 		    compatible = "ue11-hcd";
 		    reg = <0x1c170000 0x1000>;
-		    interrupt-parent = <&axi_intc_0>;
+		    interrupt-parent = <&cpuic>;
 		    interrupts = <5>;
 		};
 

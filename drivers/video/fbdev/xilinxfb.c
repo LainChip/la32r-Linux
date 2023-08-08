@@ -288,7 +288,7 @@ static int xilinxfb_assign(struct platform_device *pdev,
 		drvdata->fb_virt = ioremap(pdata->fb_phys, fbsize);
 	} else {
 		drvdata->fb_alloced = 1;
-		printk("alocate fb memory: %08x\n", PAGE_ALIGN(fbsize));
+		printk("allocate fb memory: %08x\n", PAGE_ALIGN(fbsize));
 		drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(fbsize),
 						      &drvdata->fb_phys,
 						      GFP_KERNEL);
