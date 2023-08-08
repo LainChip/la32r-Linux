@@ -21,6 +21,12 @@
 		#clock-cells = <0>;
 	};
 
+	i2sclk: i2sclk {
+		compatible = "fixed-clock";
+		clock-frequency = <96000000>;
+		#clock-cells = <0>;
+	};
+
     memory {
         name = "memory";
         device_type = "memory";
@@ -81,12 +87,12 @@
 			phys-size = <512 480>; // don't care (physical size of screen)
 		};
 
-        usb: usb@1c170000 {
-		    compatible = "ue11-hcd";
-		    reg = <0x1c170000 0x1000>;
-		    interrupt-parent = <&cpuic>;
-		    interrupts = <5>;
-		};
+        // usb: usb@1c170000 {
+		//     compatible = "ue11-hcd";
+		//     reg = <0x1c170000 0x1000>;
+		//     interrupt-parent = <&cpuic>;
+		//     interrupts = <5>;
+		// };
 
         // gmac0: dmfe@0x1ff00000{
         //         compatible = "dmfe";
@@ -120,7 +126,27 @@
         //                 reg = <0x01400000 0x0>;
         //         };
         // };
+        audio_ss_0_audio_formatter_0: audio_formatter@1c120000 {
+            compatible = "xlnx,audio-formatter-1.0";
+            interrupt-names = "irq_mm2s";
+            interrupt-parent = <&cpuic>;
+            interrupts = <6>;
+            reg = <0x1c120000 0x1000>;
+            xlnx,tx = <&i2s_transmitter>;
+            // xlnx,rx = <&i2s_receiver>;
+            clock-names = "s_axi_lite_aclk", "m_axis_mm2s_aclk", "aud_mclk";
+            clocks = <&socclk>, <&i2sclk>, <&i2sclk>;
+        };
 
+        i2s_transmitter: i2s_transmitter@1c130000 {
+            compatible = "xlnx,i2s-transmitter-1.0";
+            clock-names = "s_axi_ctrl_aclk", "aud_mclk", "s_axis_aud_aclk";
+            clocks = <&socclk>, <&i2sclk>, <&i2sclk>;
+            reg = <0x1c130000 0x10000>;
+            xlnx,dwidth = <0x10>;
+            xlnx,num-channels = <1>;
+            xlnx,snd-pcm = <&audio_ss_0_audio_formatter_0>;
+        };
     };
 };
 

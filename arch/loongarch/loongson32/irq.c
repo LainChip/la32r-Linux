@@ -39,6 +39,10 @@ void mach_irq_dispatch(unsigned int pending)
 		do_IRQ(LOONGSON_MMCDAT_IRQ);
 	if (pending & 0x40)
 		do_IRQ(LOONGSON_USB_IRQ);
+	if (pending & 0x80)
+		do_IRQ(LOONGSON_SND_MOD_IRQ);
+	if (pending & 0x100)
+		do_IRQ(LOONGSON_SND_I2S_IRQ);
 	// if (pending & 0x4)
 	// 	do_IRQ(LOONGSON_GMAC_IRQ) ; //in fact , it's for ethernet
 }
