@@ -29,20 +29,26 @@ struct fwnode_handle *acpi_picdomain_handle[MAX_PCH_PICS];
 
 void mach_irq_dispatch(unsigned int pending)
 {
-    if (pending & 0x800)
-		do_IRQ(LOONGSON_TIMER_IRQ);
+	if (pending & 0x4)
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 1); // SPI
 	if (pending & 0x8)
-		do_IRQ(LOONGSON_UART_IRQ);
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 2); // UART
 	if (pending & 0x10)
-		do_IRQ(LOONGSON_MMCCMD_IRQ);
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 3); // SDCMD
 	if (pending & 0x20)
-		do_IRQ(LOONGSON_MMCDAT_IRQ);
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 4); // SDDAT
 	if (pending & 0x40)
-		do_IRQ(LOONGSON_USB_IRQ);
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 5); // USB
 	if (pending & 0x80)
-		do_IRQ(LOONGSON_SND_MOD_IRQ);
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 6); // MOD
 	if (pending & 0x100)
-		do_IRQ(LOONGSON_SND_I2S_IRQ);
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 7); // TX
+	if (pending & 0x200)
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 8); // NC
+	// if (pending & 0x400)
+	// 	do_IRQ(LOONGSON_CPU_IRQ_BASE + 8);
+	if (pending & 0x800)
+		do_IRQ(LOONGSON_TIMER_IRQ);
 	// if (pending & 0x4)
 	// 	do_IRQ(LOONGSON_GMAC_IRQ) ; //in fact , it's for ethernet
 }
@@ -85,5 +91,6 @@ void __init arch_init_irq(void)
 
 	setup_IRQ();
 
-	set_csr_ecfg(ECFGF_IP0 | ECFGF_IP1 |ECFGF_IP2 | ECFGF_IP3| ECFGF_IPI | ECFGF_PC);
+	set_csr_ecfg(ECFGF_IP0 | ECFGF_IP1 | ECFGF_IP2 | ECFGF_IP3 | ECFGF_IP4 |
+		     ECFGF_IP5 | ECFGF_IP6 | ECFGF_IP7 | ECFGF_IPI | ECFGF_PC);
 }

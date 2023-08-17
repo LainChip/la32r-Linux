@@ -24,7 +24,7 @@ struct xtensa_exception_cause {
  * Instruction Set Architecture (ISA) Reference Manual
  */
 static const struct xtensa_exception_cause xtensa_exception_causes[] = {
-	{0, "IllegalInstructionCause", "Illegal instruction"},
+	{0, "IllegalInstructionCause", "Xtensa Illegal instruction"},
 	{1, "SyscallCause", "SYSCALL instruction"},
 	{2, "InstructionFetchErrorCause",
 	"Processor internal physical address or data error during instruction fetch"},

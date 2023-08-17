@@ -23,7 +23,7 @@
 
 	i2sclk: i2sclk {
 		compatible = "fixed-clock";
-		clock-frequency = <96000000>;
+		clock-frequency = <18432000>;
 		#clock-cells = <0>;
 	};
 
@@ -78,13 +78,13 @@
             interrupts = <3 4>;
         };
 
-        axi_tft_0: axi_tft@1c110000 {
-			compatible = "xlnx,xps-tft-2.00.a";	// accl
-			reg = <0x1c110000 0x1000>; // TFT controller
+        axi_tft_0: axi_tft@1d100000 {
+			compatible = "xlnx,xps-tft-2.00.a";
+			reg = <0x1d100000 0x1000>; // tft controller
 			xlnx,dcr-splb-slave-if = <0x1>;
 			resolution = <512 480>; // actual video size
-			virtual-resolution = <1024 480>; // framebuffersize
-			phys-size = <512 480>; // don't care (physical size of screen)
+			virtual-resolution = <1024 480>; // virtual framebuffer size
+			phys-size = <512 480>; // physical size of screen (no use) 
 		};
 
         // usb: usb@1c170000 {
@@ -94,59 +94,56 @@
 		//     interrupts = <5>;
 		// };
 
-        // gmac0: dmfe@0x1ff00000{
-        //         compatible = "dmfe";
-        //         reg = <0x1ff00000 0x10000>;
-        //         interrupt-parent = <&cpuic>;
-        //         interrupts = <3>;
-        //         interrupt-names = "macirq";
-        //         mac-address = [ 64 48 48 48 48 60 ];/* [>mac 64:48:48:48:48:60 <]*/
-        //         phy-mode = "rgmii";
-        //         bus_id = <0x0>;
-        //         phy_addr = <0xffffffff>;
-        //         dma-mask = <0xffffffff 0xffffffff>;
-        // };
-
-        // nand@0x1fe78000{
-        //         #address-cells = <1>;
-        //         #size-cells = <1>;
-        //         compatible = "ls1a-nand";
-        //         reg = <0x1fe78000 0x4000
-        //                0x1fd01160 0x0>;
-        //         interrupt-parent = <&cpuic>;
-        //         interrupts = <4>;
-        //         interrupt-names = "nand_irq";
-        //         number-of-parts = <0x2>;
-        //         partition@0 {
-        //                 label = "kernel_partition";
-        //                 reg = <0x0000000 0x01400000>;
-        //         };
-        //         partition@0x01400000 {
-        //                 label = "os_partition";
-        //                 reg = <0x01400000 0x0>;
-        //         };
-        // };
         audio_ss_0_audio_formatter_0: audio_formatter@1c120000 {
             compatible = "xlnx,audio-formatter-1.0";
             interrupt-names = "irq_mm2s";
             interrupt-parent = <&cpuic>;
             interrupts = <6>;
             reg = <0x1c120000 0x1000>;
-            xlnx,tx = <&i2s_transmitter>;
+            xlnx,tx = <&i2s_transmitter_0>;
             // xlnx,rx = <&i2s_receiver>;
             clock-names = "s_axi_lite_aclk", "m_axis_mm2s_aclk", "aud_mclk";
-            clocks = <&socclk>, <&i2sclk>, <&i2sclk>;
+            clocks = <&socclk>, <&socclk>, <&i2sclk>;
         };
 
-        i2s_transmitter: i2s_transmitter@1c130000 {
+        i2s_transmitter_0: i2s_transmitter@1c140000 {
             compatible = "xlnx,i2s-transmitter-1.0";
             clock-names = "s_axi_ctrl_aclk", "aud_mclk", "s_axis_aud_aclk";
-            clocks = <&socclk>, <&i2sclk>, <&i2sclk>;
-            reg = <0x1c130000 0x10000>;
+            clocks = <&socclk>, <&i2sclk>, <&socclk>;
+            reg = <0x1c140000 0x10000>;
             xlnx,dwidth = <0x10>;
             xlnx,num-channels = <1>;
             xlnx,snd-pcm = <&audio_ss_0_audio_formatter_0>;
         };
+
+        // reserved-memory {
+        //     #address-cells = <1>;
+        //     #size-cells = <1>;
+        //     ranges;
+            
+        //     reserved: buffer@0 {
+        //         no-map;
+        //         reg = <0x07800000 0x00080000>;
+        //     };
+        // };
+
+        // uio_0: uio_fb@1d100000 {
+        //     compatible = "generic-uio";
+        //     status = "okay";
+        //     reg = <0x1d100000 0x1000>;
+        // };
+
+        // uio_1: uio_jpeg@1d110000 {
+        //     compatible = "generic-uio";
+        //     status = "okay";
+        //     reg = <0x1d110000 0x1000>;
+        // };
+
+        // uio_0: uio_sm3@1d120000 {
+        //     compatible = "generic-uio";
+        //     status = "okay";
+        //     reg = <0x1d120000 0x1000>;
+        // };
     };
 };
 

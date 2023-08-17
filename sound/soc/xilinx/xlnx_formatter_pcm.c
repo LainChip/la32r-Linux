@@ -23,55 +23,96 @@
 
 #define DRV_NAME "xlnx_formatter_pcm"
 
-#define XLNX_S2MM_OFFSET	0
-#define XLNX_MM2S_OFFSET	0x100
+#define XLNX_S2MM_OFFSET 0
+#define XLNX_MM2S_OFFSET 0x100
 
-#define XLNX_AUD_CORE_CONFIG	0x4
-#define XLNX_AUD_CTRL		0x10
-#define XLNX_AUD_STS		0x14
+#define XLNX_AUD_CORE_CONFIG 0x4
+#define XLNX_AUD_CTRL 0x10
+#define XLNX_AUD_STS 0x14
 
-#define AUD_CTRL_RESET_MASK	BIT(1)
-#define AUD_CFG_MM2S_MASK	BIT(15)
-#define AUD_CFG_S2MM_MASK	BIT(31)
+#define AUD_CTRL_RESET_MASK BIT(1)
+#define AUD_CFG_MM2S_MASK BIT(15)
+#define AUD_CFG_S2MM_MASK BIT(31)
 
-#define XLNX_AUD_FS_MULTIPLIER	0x18
-#define XLNX_AUD_PERIOD_CONFIG	0x1C
-#define XLNX_AUD_BUFF_ADDR_LSB	0x20
-#define XLNX_AUD_BUFF_ADDR_MSB	0x24
-#define XLNX_AUD_XFER_COUNT	0x28
-#define XLNX_AUD_CH_STS_START	0x2C
-#define XLNX_BYTES_PER_CH	0x44
-#define XLNX_AUD_ALIGN_BYTES	64
+#define XLNX_AUD_FS_MULTIPLIER 0x18
+#define XLNX_AUD_PERIOD_CONFIG 0x1C
+#define XLNX_AUD_BUFF_ADDR_LSB 0x20
+#define XLNX_AUD_BUFF_ADDR_MSB 0x24
+#define XLNX_AUD_XFER_COUNT 0x28
+#define XLNX_AUD_CH_STS_START 0x2C
+#define XLNX_BYTES_PER_CH 0x44
+#define XLNX_AUD_ALIGN_BYTES 64
 
-#define AUD_STS_IOC_IRQ_MASK	BIT(31)
-#define AUD_STS_CH_STS_MASK	BIT(29)
-#define AUD_CTRL_IOC_IRQ_MASK	BIT(13)
-#define AUD_CTRL_TOUT_IRQ_MASK	BIT(14)
-#define AUD_CTRL_DMA_EN_MASK	BIT(0)
+#define AUD_STS_IOC_IRQ_MASK BIT(31)
+#define AUD_STS_CH_STS_MASK BIT(29)
+#define AUD_CTRL_IOC_IRQ_MASK BIT(13)
+#define AUD_CTRL_TOUT_IRQ_MASK BIT(14)
+#define AUD_CTRL_DMA_EN_MASK BIT(0)
 
-#define CFG_MM2S_CH_MASK	GENMASK(11, 8)
-#define CFG_MM2S_CH_SHIFT	8
-#define CFG_MM2S_XFER_MASK	GENMASK(14, 13)
-#define CFG_MM2S_XFER_SHIFT	13
-#define CFG_MM2S_PKG_MASK	BIT(12)
+#define CFG_MM2S_CH_MASK GENMASK(11, 8)
+#define CFG_MM2S_CH_SHIFT 8
+#define CFG_MM2S_XFER_MASK GENMASK(14, 13)
+#define CFG_MM2S_XFER_SHIFT 13
+#define CFG_MM2S_PKG_MASK BIT(12)
 
-#define CFG_S2MM_CH_MASK	GENMASK(27, 24)
-#define CFG_S2MM_CH_SHIFT	24
-#define CFG_S2MM_XFER_MASK	GENMASK(30, 29)
-#define CFG_S2MM_XFER_SHIFT	29
-#define CFG_S2MM_PKG_MASK	BIT(28)
+#define CFG_S2MM_CH_MASK GENMASK(27, 24)
+#define CFG_S2MM_CH_SHIFT 24
+#define CFG_S2MM_XFER_MASK GENMASK(30, 29)
+#define CFG_S2MM_XFER_SHIFT 29
+#define CFG_S2MM_PKG_MASK BIT(28)
 
-#define AUD_CTRL_DATA_WIDTH_MASK	GENMASK(18, 16)
-#define AUD_CTRL_DATA_WIDTH_SHIFT	16
-#define AUD_CTRL_ACTIVE_CH_MASK		GENMASK(22, 19)
-#define AUD_CTRL_ACTIVE_CH_SHIFT	19
-#define PERIOD_CFG_PERIODS_SHIFT	16
+#define AUD_CTRL_DATA_WIDTH_MASK GENMASK(18, 16)
+#define AUD_CTRL_DATA_WIDTH_SHIFT 16
+#define AUD_CTRL_ACTIVE_CH_MASK GENMASK(22, 19)
+#define AUD_CTRL_ACTIVE_CH_SHIFT 19
+#define PERIOD_CFG_PERIODS_SHIFT 16
 
-#define PERIODS_MIN		2
-#define PERIODS_MAX		6
-#define PERIOD_BYTES_MIN	192
-#define PERIOD_BYTES_MAX	(50 * 1024)
-#define XLNX_PARAM_UNKNOWN	0
+#define PERIODS_MIN 2
+#define PERIODS_MAX 6
+#define PERIOD_BYTES_MIN 192
+#define PERIOD_BYTES_MAX (50 * 1024)
+#define XLNX_PARAM_UNKNOWN 0
+
+enum bit_depth {
+	BIT_DEPTH_8,
+	BIT_DEPTH_16,
+	BIT_DEPTH_20,
+	BIT_DEPTH_24,
+	BIT_DEPTH_32,
+};
+
+struct xlnx_pcm_drv_data {
+	void __iomem *mmio;
+	bool s2mm_presence;
+	bool mm2s_presence;
+	int s2mm_irq;
+	int mm2s_irq;
+	struct snd_pcm_substream *play_stream;
+	struct snd_pcm_substream *capture_stream;
+	struct platform_device *pdev;
+	struct device_node *nodes[XLNX_MAX_PATHS];
+	struct clk *axi_clk;
+	struct clk *mm2s_axis_clk;
+	struct clk *s2mm_axis_clk;
+	struct clk *aud_mclk;
+	unsigned int sysclk;
+};
+
+/*
+ * struct xlnx_pcm_stream_param - stream configuration
+ * @mmio: base address offset
+ * @interleaved: audio channels arrangement in buffer
+ * @xfer_mode: data formatting mode during transfer
+ * @ch_limit: Maximum channels supported
+ * @buffer_size: stream ring buffer size
+ */
+struct xlnx_pcm_stream_param {
+	void __iomem *mmio;
+	bool interleaved;
+	u32 xfer_mode;
+	u32 ch_limit;
+	u64 buffer_size;
+};
 
 static const struct snd_pcm_hardware xlnx_pcm_hardware = {
 	.info = SNDRV_PCM_INFO_INTERLEAVED | SNDRV_PCM_INFO_BLOCK_TRANSFER |
@@ -91,52 +132,7 @@ static const struct snd_pcm_hardware xlnx_pcm_hardware = {
 	.periods_max = PERIODS_MAX,
 };
 
-struct xlnx_pcm_drv_data {
-	void __iomem *mmio;
-	bool s2mm_presence;
-	bool mm2s_presence;
-	int s2mm_irq;
-	int mm2s_irq;
-	struct snd_pcm_substream *play_stream;
-	struct snd_pcm_substream *capture_stream;
-	struct platform_device *pdev;
-	struct device_node *nodes[XLNX_MAX_PATHS];
-	struct clk *axi_clk;
-	struct clk *mm2s_axis_clk;
-	struct clk *s2mm_axis_clk;
-	struct clk *aud_mclk;
-};
-
-/*
- * struct xlnx_pcm_stream_param - stream configuration
- * @mmio: base address offset
- * @interleaved: audio channels arrangement in buffer
- * @xfer_mode: data formatting mode during transfer
- * @ch_limit: Maximum channels supported
- * @buffer_size: stream ring buffer size
- */
-struct xlnx_pcm_stream_param {
-	void __iomem *mmio;
-	bool interleaved;
-	u32 xfer_mode;
-	u32 ch_limit;
-	u64 buffer_size;
-};
-
-enum bit_depth {
-	BIT_DEPTH_8,
-	BIT_DEPTH_16,
-	BIT_DEPTH_20,
-	BIT_DEPTH_24,
-	BIT_DEPTH_32,
-};
-
-enum {
-	AES_TO_AES,
-	AES_TO_PCM,
-	PCM_TO_PCM,
-	PCM_TO_AES
-};
+enum { AES_TO_AES, AES_TO_PCM, PCM_TO_PCM, PCM_TO_AES };
 
 static void xlnx_parse_aes_params(u32 chsts_reg1_val, u32 chsts_reg2_val,
 				  struct device *dev)
@@ -296,11 +292,15 @@ static irqreturn_t xlnx_mm2s_irq_handler(int irq, void *arg)
 
 	reg = adata->mmio + XLNX_MM2S_OFFSET + XLNX_AUD_STS;
 	val = ioread32(reg);
+	// printk("xlnx modifier irq val: %x\n", val);
 	if (val & AUD_STS_IOC_IRQ_MASK) {
 		iowrite32(val & AUD_STS_IOC_IRQ_MASK, reg);
+		// dev_info(dev, "play_stream: %08x\n", adata->play_stream);
 		if (adata->play_stream)
 			snd_pcm_period_elapsed(adata->play_stream);
 		return IRQ_HANDLED;
+	} else {
+		dev_info(dev, "unhandled irq with val %x\n", val);
 	}
 
 	return IRQ_NONE;
@@ -323,6 +323,16 @@ static irqreturn_t xlnx_s2mm_irq_handler(int irq, void *arg)
 	}
 
 	return IRQ_NONE;
+}
+
+static int xlnx_formatter_set_sysclk(struct snd_soc_component *component,
+				     int clk_id, int source, unsigned int freq,
+				     int dir)
+{
+	struct xlnx_pcm_drv_data *adata = dev_get_drvdata(component->dev);
+
+	adata->sysclk = freq;
+	return 0;
 }
 
 static int xlnx_formatter_pcm_open(struct snd_soc_component *component,
@@ -396,6 +406,7 @@ static int xlnx_formatter_pcm_open(struct snd_soc_component *component,
 			"Unable to set constraint on period bytes\n");
 		return err;
 	}
+
 	/* Resize the buffer bytes as divisible by 64 */
 	err = snd_pcm_hw_constraint_step(runtime, 0,
 					 SNDRV_PCM_HW_PARAM_BUFFER_BYTES,
@@ -405,6 +416,7 @@ static int xlnx_formatter_pcm_open(struct snd_soc_component *component,
 			"Unable to set constraint on buffer bytes\n");
 		return err;
 	}
+
 	/* Set periods as integer multiple */
 	err = snd_pcm_hw_constraint_integer(runtime,
 					    SNDRV_PCM_HW_PARAM_PERIODS);
@@ -427,7 +439,7 @@ static int xlnx_formatter_pcm_close(struct snd_soc_component *component,
 {
 	int ret;
 	struct xlnx_pcm_stream_param *stream_data =
-			substream->runtime->private_data;
+		substream->runtime->private_data;
 
 	if (!component)
 		return -ENODEV;
@@ -483,11 +495,24 @@ static int xlnx_formatter_pcm_hw_params(struct snd_soc_component *component,
 	if (active_ch > stream_data->ch_limit)
 		return -EINVAL;
 
+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK && adata->sysclk) {
+		unsigned int mclk_fs = adata->sysclk / params_rate(params);
+
+		if (adata->sysclk % params_rate(params) != 0) {
+			dev_warn(component->dev,
+				 "sysclk %u not divisible by rate %u\n",
+				 adata->sysclk, params_rate(params));
+			return -EINVAL;
+		}
+
+		writel(mclk_fs, stream_data->mmio + XLNX_AUD_FS_MULTIPLIER);
+	}
+
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE &&
 	    stream_data->xfer_mode == AES_TO_PCM &&
 	    ((strstr(adata->nodes[XLNX_CAPTURE]->name, "hdmi")) ||
-	    (strstr(adata->nodes[XLNX_CAPTURE]->name, "sdi")) ||
-	    (strstr(adata->nodes[XLNX_CAPTURE]->name, "dp")))) {
+	     (strstr(adata->nodes[XLNX_CAPTURE]->name, "sdi")) ||
+	     (strstr(adata->nodes[XLNX_CAPTURE]->name, "dp")))) {
 		/*
 		 * If formatter is in AES_PCM mode for HDMI/SDI capture path,
 		 * parse AES header
@@ -495,9 +520,9 @@ static int xlnx_formatter_pcm_hw_params(struct snd_soc_component *component,
 		val = ioread32(stream_data->mmio + XLNX_AUD_STS);
 		if (val & AUD_STS_CH_STS_MASK) {
 			aes_reg1_val = ioread32(stream_data->mmio +
-					 XLNX_AUD_CH_STS_START);
+						XLNX_AUD_CH_STS_START);
 			aes_reg2_val = ioread32(stream_data->mmio +
-					 XLNX_AUD_CH_STS_START + 0x4);
+						XLNX_AUD_CH_STS_START + 0x4);
 
 			xlnx_parse_aes_params(aes_reg1_val, aes_reg2_val,
 					      component->dev);
@@ -515,7 +540,8 @@ static int xlnx_formatter_pcm_hw_params(struct snd_soc_component *component,
 	high = upper_32_bits(runtime->dma_addr);
 	iowrite32(low, stream_data->mmio + XLNX_AUD_BUFF_ADDR_LSB);
 	iowrite32(high, stream_data->mmio + XLNX_AUD_BUFF_ADDR_MSB);
-
+	// dev_info(component->dev, "dma addr: %x\n", low);
+	// printk("dma addr: %x\n", low);
 	val = ioread32(stream_data->mmio + XLNX_AUD_CTRL);
 	val &= ~AUD_CTRL_DATA_WIDTH_MASK;
 	bits_per_sample = params_width(params);
@@ -541,9 +567,11 @@ static int xlnx_formatter_pcm_hw_params(struct snd_soc_component *component,
 	val |= active_ch << AUD_CTRL_ACTIVE_CH_SHIFT;
 	iowrite32(val, stream_data->mmio + XLNX_AUD_CTRL);
 
-	val = (params_periods(params) << PERIOD_CFG_PERIODS_SHIFT)
-		| params_period_bytes(params);
+	val = (params_periods(params) << PERIOD_CFG_PERIODS_SHIFT) |
+	      params_period_bytes(params);
 	iowrite32(val, stream_data->mmio + XLNX_AUD_PERIOD_CONFIG);
+	// dev_info(component->dev, "period: %x\n", val);
+	// printk("period: %x\n", val);
 	bytes_per_ch = DIV_ROUND_UP(params_period_bytes(params), active_ch);
 	iowrite32(bytes_per_ch, stream_data->mmio + XLNX_BYTES_PER_CH);
 
@@ -563,11 +591,12 @@ static int xlnx_formatter_pcm_hw_free(struct snd_soc_component *component,
 }
 
 static int xlnx_formatter_pcm_trigger(struct snd_soc_component *component,
-				      struct snd_pcm_substream *substream, int cmd)
+				      struct snd_pcm_substream *substream,
+				      int cmd)
 {
 	u32 val;
 	struct xlnx_pcm_stream_param *stream_data =
-			substream->runtime->private_data;
+		substream->runtime->private_data;
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -595,16 +624,16 @@ static int xlnx_formatter_pcm_new(struct snd_soc_component *component,
 	if (!component)
 		return -ENODEV;
 
-	snd_pcm_lib_preallocate_pages_for_all(rtd->pcm,
-					      SNDRV_DMA_TYPE_DEV,
-					      component->dev,
-					      xlnx_pcm_hardware.buffer_bytes_max,
-					      xlnx_pcm_hardware.buffer_bytes_max);
+	snd_pcm_lib_preallocate_pages_for_all(
+		rtd->pcm, SNDRV_DMA_TYPE_DEV, component->dev,
+		xlnx_pcm_hardware.buffer_bytes_max,
+		xlnx_pcm_hardware.buffer_bytes_max);
 	return 0;
 }
 
 static const struct snd_soc_component_driver xlnx_asoc_component = {
 	.name = DRV_NAME,
+	.set_sysclk = xlnx_formatter_set_sysclk,
 	.open = xlnx_formatter_pcm_open,
 	.close = xlnx_formatter_pcm_close,
 	.hw_params = xlnx_formatter_pcm_hw_params,
@@ -644,28 +673,24 @@ static int configure_mm2s(struct xlnx_pcm_drv_data *aud_drv_data,
 		goto axis_clk_err;
 	}
 
-	aud_drv_data->mm2s_irq = platform_get_irq_byname(pdev,
-							 "irq_mm2s");
+	aud_drv_data->mm2s_irq = platform_get_irq_byname(pdev, "irq_mm2s");
 	if (aud_drv_data->mm2s_irq < 0) {
 		ret = aud_drv_data->mm2s_irq;
 		goto mm2s_err;
 	}
 	ret = devm_request_irq(dev, aud_drv_data->mm2s_irq,
 			       xlnx_mm2s_irq_handler, 0,
-			       "xlnx_formatter_pcm_mm2s_irq",
-			       dev);
+			       "xlnx_formatter_pcm_mm2s_irq", dev);
 	if (ret) {
 		dev_err(dev, "xlnx audio mm2s irq request failed\n");
 		goto mm2s_err;
 	}
-	ret = xlnx_formatter_pcm_reset(aud_drv_data->mmio +
-				       XLNX_MM2S_OFFSET);
+	ret = xlnx_formatter_pcm_reset(aud_drv_data->mmio + XLNX_MM2S_OFFSET);
 	if (ret) {
 		dev_err(dev, "audio formatter reset failed\n");
 		goto mm2s_err;
 	}
-	xlnx_formatter_disable_irqs(aud_drv_data->mmio +
-				    XLNX_MM2S_OFFSET,
+	xlnx_formatter_disable_irqs(aud_drv_data->mmio + XLNX_MM2S_OFFSET,
 				    SNDRV_PCM_STREAM_PLAYBACK);
 
 	aud_drv_data->nodes[XLNX_PLAYBACK] =
@@ -673,8 +698,7 @@ static int configure_mm2s(struct xlnx_pcm_drv_data *aud_drv_data,
 	if (!aud_drv_data->nodes[XLNX_PLAYBACK])
 		dev_err(dev, "tx node not found\n");
 	else
-		dev_info(dev,
-			 "sound card device will use DAI link: %s\n",
+		dev_info(dev, "sound card device will use DAI link: %s\n",
 			 (aud_drv_data->nodes[XLNX_PLAYBACK])->name);
 	of_node_put(aud_drv_data->nodes[XLNX_PLAYBACK]);
 
@@ -714,20 +738,17 @@ static int configure_s2mm(struct xlnx_pcm_drv_data *aud_drv_data,
 	}
 	ret = devm_request_irq(dev, aud_drv_data->s2mm_irq,
 			       xlnx_s2mm_irq_handler, 0,
-			       "xlnx_formatter_pcm_s2mm_irq",
-			       dev);
+			       "xlnx_formatter_pcm_s2mm_irq", dev);
 	if (ret) {
 		dev_err(dev, "xlnx audio s2mm irq request failed\n");
 		goto s2mm_err;
 	}
-	ret = xlnx_formatter_pcm_reset(aud_drv_data->mmio +
-				       XLNX_S2MM_OFFSET);
+	ret = xlnx_formatter_pcm_reset(aud_drv_data->mmio + XLNX_S2MM_OFFSET);
 	if (ret) {
 		dev_err(dev, "audio formatter reset failed\n");
 		goto s2mm_err;
 	}
-	xlnx_formatter_disable_irqs(aud_drv_data->mmio +
-				    XLNX_S2MM_OFFSET,
+	xlnx_formatter_disable_irqs(aud_drv_data->mmio + XLNX_S2MM_OFFSET,
 				    SNDRV_PCM_STREAM_CAPTURE);
 
 	aud_drv_data->nodes[XLNX_CAPTURE] =
@@ -799,8 +820,8 @@ static int xlnx_formatter_pcm_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(dev, aud_drv_data);
 
-	ret = devm_snd_soc_register_component(dev, &xlnx_asoc_component,
-					      NULL, 0);
+	ret = devm_snd_soc_register_component(dev, &xlnx_asoc_component, NULL,
+					      0);
 	if (ret) {
 		dev_err(dev, "pcm platform device register failed\n");
 		goto clk_err;
@@ -809,12 +830,9 @@ static int xlnx_formatter_pcm_probe(struct platform_device *pdev)
 	pdata_size = sizeof(aud_drv_data->nodes);
 	if (aud_drv_data->nodes[XLNX_PLAYBACK] ||
 	    aud_drv_data->nodes[XLNX_CAPTURE])
-		aud_drv_data->pdev =
-			platform_device_register_resndata(dev, "xlnx_snd_card",
-							  PLATFORM_DEVID_AUTO,
-							  NULL, 0,
-							  &aud_drv_data->nodes,
-							  pdata_size);
+		aud_drv_data->pdev = platform_device_register_resndata(
+			dev, "xlnx_snd_card", PLATFORM_DEVID_AUTO, NULL, 0,
+			&aud_drv_data->nodes, pdata_size);
 	if (!aud_drv_data->pdev)
 		dev_err(dev, "sound card device creation failed\n");
 
@@ -848,7 +866,7 @@ static int xlnx_formatter_pcm_remove(struct platform_device *pdev)
 }
 
 static const struct of_device_id xlnx_formatter_pcm_of_match[] = {
-	{ .compatible = "xlnx,audio-formatter-1.0"},
+	{ .compatible = "xlnx,audio-formatter-1.0" },
 	{},
 };
 MODULE_DEVICE_TABLE(of, xlnx_formatter_pcm_of_match);
@@ -863,5 +881,5 @@ static struct platform_driver xlnx_formatter_pcm_driver = {
 };
 
 module_platform_driver(xlnx_formatter_pcm_driver);
-MODULE_AUTHOR("Maruthi Srinivas Bayyavarapu");
+MODULE_AUTHOR("Maruthi Srinivas Bayyavarapu <maruthis@xilinx.com>");
 MODULE_LICENSE("GPL v2");

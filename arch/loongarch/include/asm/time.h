@@ -41,7 +41,8 @@ static inline unsigned int calc_const_freq(void)
 #define LOONGARCH32_FREQ_REG 0x9fd0f030
 static inline unsigned int calc_const_freq(void)
 {
-	return 50000000;
+	// return 50000000;
+	return 100000000;
     // unsigned int freq = *(int *)LOONGARCH32_FREQ_REG;
 	// return freq;
 }
